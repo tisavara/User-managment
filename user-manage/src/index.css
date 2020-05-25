@@ -1,0 +1,159 @@
+body {
+  margin: 0;
+  font-family: 'Dosis', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: 'Dosis', sans-serif;
+}
+
+input {
+  width: 100%;
+  background: transparent;
+  font-size: 1vw;
+  outline: 0;
+  border: 0;
+  border-bottom: 2px solid #797979;
+  transition: 0.2s;
+} 
+
+input:focus {
+  border-color: rgb(37, 37, 37);
+}
+
+a {
+  color: #398dc7;
+}
+
+a:hover {
+  color: #1d4a6b;
+}
+
+a:active {
+  color: #762ba1;
+}
+
+/* page */
+
+.App {
+  margin: auto;
+  margin-top: 10vw;
+  width: 40vw;
+  text-align: center;
+}
+
+.card {
+  border: 1px solid #000000;
+  padding: 2vw;
+}
+
+.card label {
+  position: absolute;
+  text-align: left;
+  color: #797979;
+  top: 0;
+  font-size: 1vw;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+  font-size: 1.5vw;
+}
+
+.header-content {
+  padding: 1vw 0 1vw 0;
+  border-bottom: 1px solid #000000;
+}
+
+.footer-content {
+  margin-top: 5vw;
+  border-top: 1px solid #000000;
+  text-align: right;
+}
+
+/* button */
+
+.div-button{
+  height: 3vw;
+}
+
+.submit-button {
+  font-family: sans-serif;
+  font-size: 1vw;
+  height: 2vw;
+  border: 1px solid #000000;
+  border-radius: 1px;
+  color: #000000;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #398dc7;
+  color: #ffffff;
+  font-size: 1.3vw;
+  height: 3vw;
+  border: 0;
+}
+
+/* text */
+
+.text-center {
+  float: center;
+}
+
+.text-right {
+  float: right;
+}
+
+.text-left {
+  float: left;
+}
+
+/* other */
+
+.login-input {
+  position: relative;
+  padding: 2vw 0 2vw 0;
+}
+
+.second-row {
+  margin: 1vw 0 1vw 0;
+  height: 3vw;
+}
+
+.search-input {
+  border: 1px solid #000000;
+  border-radius: 10px;
+  height: 2vw;
+  font-size: 1vw;
+}
+
+.ant-modal-footer {
+  text-align: left;
+}
+
+.imp {
+  color: red;
+}
+
+.row-form {
+  width: 10%;
+}
+
+.ant-modal-confirm .ant-modal-confirm-btns {
+  float: initial;
+  text-align: center;
+}
+
+.ant-modal-confirm-body {
+  text-align: center;
+}
+
+.ant-modal-confirm-body > .anticon {
+  float: initial;
+  margin-right: 0;
+}
