@@ -113,6 +113,10 @@ a:active {
   float: left;
 }
 
+.text-err {
+  color: red;
+}
+
 /* other */
 
 .login-input {
