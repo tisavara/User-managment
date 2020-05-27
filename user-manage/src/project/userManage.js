@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "antd";
-import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  ExclamationCircleOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from "@ant-design/icons";
 import { Table, Space, Checkbox, Modal, Select, Radio } from "antd";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import {
   logoutAction,
   getAllUserAction,
+  getUserForManagerAction,
   AddUserAction,
   clearCheckAction,
   EditUserAction,
@@ -21,11 +27,13 @@ function UserManage(props) {
   const [selectionType] = useState("checkbox");
   const [visible, setVisible] = useState(false);
   const [modalContant, setModalContant] = useState("");
+  const [eye, setEye] = useState(false);
   // form detail
   const [ID, setID] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [department, setDepartment] = useState("");
   const [job, setJob] = useState("");
   const [role, setRole] = useState("Admin");
@@ -36,6 +44,8 @@ function UserManage(props) {
   const [ErrDepartment, setErrDepartment] = useState("");
   const [ErrJob, setErrJob] = useState("");
   const [ErrRole, setErrRole] = useState("");
+
+  var randomstring = Math.random().toString(36).slice(-8);
 
   const columns = [
     {
@@ -81,10 +91,21 @@ function UserManage(props) {
       },
     },
     {
+      title: "User",
+      dataIndex: "user",
+      render: (i, user) => {
+        return (
+          <Space>
+            <Checkbox checked={user.role === "User" ? true : false} />
+          </Space>
+        );
+      },
+    },
+    {
       title: "Operation",
       dataIndex: "operation",
       render: (i, user) => {
-        return (
+        const show = (
           <Space>
             <a
               href="#st"
@@ -103,13 +124,25 @@ function UserManage(props) {
               Edit
             </a>
             <span style={{ margin: "1vw" }}>|</span>
-            <a href="#st" onClick={() => {
-              showDeleteConfirm(user.id)
-              }}>
+            <a
+              href="#st"
+              onClick={() => {
+                showDeleteConfirm(user.id);
+              }}
+            >
               Delete
             </a>
           </Space>
         );
+        if (user.role === "User") {
+          if (auth.info.role === "Manager") {
+            return null;
+          } else {
+            return show;
+          }
+        } else {
+          return show;
+        }
       },
     },
   ];
@@ -152,7 +185,7 @@ function UserManage(props) {
       okType: "danger",
       cancelText: "No",
       onOk() {
-        props.delete(del)
+        props.delete(del);
       },
       onCancel() {
         console.log("Cancel");
@@ -162,33 +195,51 @@ function UserManage(props) {
 
   function error(msg) {
     Modal.error({
-      title: 'Error',
+      title: "Error",
       content: msg,
     });
   }
 
   useEffect(() => {
-    props.getAllUser.getAllUserAction();
-  }, [props.getAllUser]);
+    if (auth.info.role === "Manager") {
+      const data = { department: auth.info.department };
+      props.getUser.getUserForManager(data);
+    } else {
+      props.getAllUser.getAllUserAction();
+    }
+  }, [props.getAllUser, props.getUser, auth.info.role, auth.info.department]);
 
   useEffect(() => {
-    if (auth.checkAddUser || auth.checkEdit || auth.checkDelete) {
-      if (
-        auth.checkAddUser.status === "success" ||
-        auth.checkEdit.status === "success" ||
-        auth.checkDelete.status === "success"
-      ) {
+    if (auth.checkAddUser) {
+      if ( auth.checkAddUser.status === "success" ) {
         setVisible(false);
         props.clearCheck.clearCheckAction();
         window.location.reload();
       } else if (auth.checkAddUser.status === "error") {
         setErrRole("This email is already used.");
-      } else if (auth.checkEdit.status === "error") {
-        setErrRole(auth.checkEdit.message);
-      } else if (auth.checkDelete.status === "error") {
-        error(auth.checkDelete.message)
       }
     }
+    
+    if(auth.checkEdit){
+      if(auth.checkEdit.status === "success"){
+        setVisible(false);
+        props.clearCheck.clearCheckAction();
+        window.location.reload();
+      } else if (auth.checkEdit.status === "error") {
+        setErrRole(auth.checkEdit.message);
+      } 
+    }
+
+    if(auth.checkDelete){
+      if(auth.checkDelete.status === "success"){
+        setVisible(false);
+        props.clearCheck.clearCheckAction();
+        window.location.reload();
+      }else if (auth.checkDelete.status === "error") {
+        error(auth.checkDelete.message);
+      }
+    }
+
   }, [auth.checkAddUser, auth.checkEdit, props.clearCheck, auth.checkDelete]);
 
   if (auth.info === "") {
@@ -234,7 +285,7 @@ function UserManage(props) {
         rowSelection={{ type: selectionType, ...rowSelection }}
         columns={columns}
         dataSource={data}
-        scroll={{ y: 250 }}
+        scroll={{ y: 400 }}
       ></Table>
 
       <div className="footer-content">Version 0.0.1</div>
@@ -251,7 +302,8 @@ function UserManage(props) {
               ErrDepartment === "success" ||
               ErrJob === "success" ||
               ErrPassword === "success" ||
-              ErrRole === "success"
+              ErrRole === "success" ||
+              newPassword !== ""
             ) {
               const data = {
                 id: ID,
@@ -260,7 +312,7 @@ function UserManage(props) {
                 department: department,
                 job_title: job,
                 role: role,
-                password: password,
+                password: newPassword === '' ? password : newPassword,
               };
               props.editUser(data);
             } else {
@@ -402,14 +454,33 @@ function UserManage(props) {
           )}
           <br />
           <input
-            type="password"
+            type={eye === false ? "password" : "text"}
             style={{ width: "80%" }}
+            value={modalContant === "edit" ? newPassword : password}
             onChange={(e) => {
               setPassword(e.target.value);
               setErrPassword("success");
             }}
           />
-          <a href="#s" style={{ marginLeft: "2vw" }}>
+          {password === "" ? null : eye === false ? (
+            <EyeOutlined className="eye" onClick={() => setEye(!eye)} />
+          ) : (
+            <EyeInvisibleOutlined
+              className="eye"
+              onClick={() => setEye(!eye)}
+            />
+          )}
+          <a
+            href="#s"
+            onClick={() => {
+              if (modalContant === "edit") {
+                setNewPassword(randomstring);
+              } else {
+                setPassword(randomstring);
+              }
+            }}
+            style={{ marginLeft: "2vw" }}
+          >
             Generate
           </a>
           <br />
@@ -429,6 +500,12 @@ function UserManage(props) {
           >
             <Radio value="Admin">Admin</Radio>
             <Radio value="Manager">Manager</Radio>
+            <Radio
+              value="User"
+              disabled={auth.info.role === "Manager" ? true : false}
+            >
+              User
+            </Radio>
           </Radio.Group>
         </p>
         <p className="text-err">{ErrRole === "success" ? null : ErrRole}</p>
@@ -447,6 +524,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     logout: (logout) => dispatch(logoutAction(logout)),
     getAllUser: { getAllUserAction: () => dispatch(getAllUserAction()) },
+    getUser: {
+      getUserForManager: (get) => dispatch(getUserForManagerAction(get)),
+    },
     addUser: (add) => dispatch(AddUserAction(add)),
     clearCheck: { clearCheckAction: () => dispatch(clearCheckAction()) },
     editUser: (edit) => dispatch(EditUserAction(edit)),

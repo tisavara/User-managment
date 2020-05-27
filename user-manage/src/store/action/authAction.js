@@ -47,6 +47,19 @@ export const getAllUserAction = () => {
   };
 };
 
+export const getUserForManagerAction = (user) => {
+  return (dispatch, getState) => {
+    axios.post(linkAPI + "getUser/user", user).then((response) => {
+      const data = response.data;
+      dispatch({ type: "GET_ALL_USER", data });
+    }).catch((error) => {
+      console.log(error);
+      const data = { status: "error", message: "Connection error" };
+      dispatch({ type: "GET_ALL_USER", data });
+    })
+  }
+}
+
 export const AddUserAction = (add) => {
   return (dispatch, getState) => {
     axios.post(linkAPI + "addUser", add).then((response) => {

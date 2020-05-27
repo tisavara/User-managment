@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { Redirect } from "react-router-dom";
 import { loginAction, logoutAction } from "./../store/action/authAction";
 
@@ -9,6 +10,7 @@ function Login(props) {
   const [password, setPassword] = useState("");
   const [ErrEmail, setErrEmail] = useState("");
   const [ErrPassword, setErrPassword] = useState("");
+  const [eye, setEye] = useState(false)
 
   useEffect(() => {
     if (auth.info.status === "error") {
@@ -77,7 +79,7 @@ function Login(props) {
         <div className="login-input">
           <label htmlFor="Password">Password</label>
           <input
-            type="password"
+            type={eye === false ? "password": "text"}
             id="Password"
             value={password}
             onChange={(e) => {
@@ -85,6 +87,7 @@ function Login(props) {
               setErrPassword("success");
             }}
           />
+          {password === "" ? null : eye === false ? <EyeOutlined className="eye" onClick={() => setEye(!eye)} /> : <EyeInvisibleOutlined className="eye" onClick={() => setEye(!eye)} />}
           <span className="text-err">
             {ErrPassword === "success" ? null : ErrPassword}
           </span>

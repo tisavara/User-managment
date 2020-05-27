@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  height: auto;
   font-family: 'Dosis', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -161,4 +162,10 @@ a:active {
 .ant-modal-confirm-body > .anticon {
   float: initial;
   margin-right: 0;
+}
+
+.eye {
+  position: absolute;
+  margin-left: -2vw;
+  cursor: pointer;
 }

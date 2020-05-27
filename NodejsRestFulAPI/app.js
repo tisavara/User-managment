@@ -62,6 +62,17 @@ app.get("/getUser", function (req, res) {
   });
 });
 
+// API get user for manager
+app.post("/getUser/user", function (req, res) {
+  const { department } = res.req.body;
+  pool.query("SELECT * FROM USERMANAGE WHERE department = $1", [department], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    res.status(200).json(results.rows);
+  });
+});
+
 // API add user uncomplete
 app.post("/addUser", function (req, res) {
   const { name, email, department, job_title, role, password } = res.req.body;
