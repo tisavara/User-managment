@@ -93,7 +93,7 @@ export const EditUserAction = (edit) => {
 export const DeleteUserAction = (del) => {
     return (dispatch, getState) => {
         axios.delete(linkAPI + "delete/" + del).then((response) => {
-            console.log(response);
+            // console.log(response);
             const data = response.data
             dispatch({ type: 'CHECK_DELETE_USER', data})
         }).catch((error) => {

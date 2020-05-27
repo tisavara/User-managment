@@ -96,8 +96,6 @@ function Login(props) {
           <button
             className="submit-button"
             onClick={() => {
-              console.log(ErrEmail, ErrPassword);
-
               if (email === "") {
                 setErrEmail("Please fill in your email");
               } else if (

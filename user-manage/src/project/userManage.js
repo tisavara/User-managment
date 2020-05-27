@@ -163,11 +163,11 @@ function UserManage(props) {
 
   const rowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
+      // console.log(
+      //   `selectedRowKeys: ${selectedRowKeys}`,
+      //   "selectedRows: ",
+      //   selectedRows
+      // );
     },
     getCheckboxProps: (record) => ({
       disabled: record.name === "Disabled User",
@@ -188,7 +188,7 @@ function UserManage(props) {
         props.delete(del);
       },
       onCancel() {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   }
