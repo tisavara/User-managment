@@ -89,6 +89,7 @@ a:active {
   color: #000000;
   transition: 0.2s;
   cursor: pointer;
+  background: #ffffff;
 }
 
 .submit-button:hover {

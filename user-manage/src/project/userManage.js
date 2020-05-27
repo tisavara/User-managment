@@ -2,15 +2,40 @@ import React, { useState, useEffect } from "react";
 import { Input } from "antd";
 import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { Table, Space, Checkbox, Modal, Select, Radio } from "antd";
+import { connect } from "react-redux";
+import { Redirect } from "react-router-dom";
+import {
+  logoutAction,
+  getAllUserAction,
+  AddUserAction,
+  clearCheckAction,
+  EditUserAction,
+  DeleteUserAction,
+} from "./../store/action/authAction";
 
 const { Option } = Select;
 const { confirm } = Modal;
 
-function UserManage() {
-  const [selectionType, setSelectionType] = useState("checkbox");
+function UserManage(props) {
+  const { auth } = props;
+  const [selectionType] = useState("checkbox");
   const [visible, setVisible] = useState(false);
-  const [modalContant, setModalContant] = useState('')
+  const [modalContant, setModalContant] = useState("");
+  // form detail
+  const [ID, setID] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [department, setDepartment] = useState("");
+  const [job, setJob] = useState("");
   const [role, setRole] = useState("Admin");
+  // error
+  const [ErrName, setErrName] = useState("");
+  const [ErrEmail, setErrEmail] = useState("");
+  const [ErrPassword, setErrPassword] = useState("");
+  const [ErrDepartment, setErrDepartment] = useState("");
+  const [ErrJob, setErrJob] = useState("");
+  const [ErrRole, setErrRole] = useState("");
 
   const columns = [
     {
@@ -30,56 +55,78 @@ function UserManage() {
     },
     {
       title: "Job Title",
-      dataIndex: "job",
-      key: "job",
+      dataIndex: "job_title",
+      key: "job_title",
     },
     {
       title: "Admin",
       dataIndex: "admin",
-      render: () => (
-        <Space>
-          <Checkbox />
-        </Space>
-      ),
+      render: (i, user) => {
+        return (
+          <Space>
+            <Checkbox checked={user.role === "Admin" ? true : false} />
+          </Space>
+        );
+      },
     },
     {
       title: "Manager",
       dataIndex: "manager",
-      render: () => (
-        <Space>
-          <Checkbox />
-        </Space>
-      ),
+      render: (i, user) => {
+        return (
+          <Space>
+            <Checkbox checked={user.role === "Manager" ? true : false} />
+          </Space>
+        );
+      },
     },
     {
       title: "Operation",
       dataIndex: "operation",
-      render: () => (
-        <Space>
-          <a href="#st" onClick={() => {
-              setModalContant("edit")
-              setVisible(true)
-            }}>
-            Edit
-          </a>
-          <span style={{ margin: "1vw" }}>|</span>
-          <a href="#st" onClick={showDeleteConfirm}>Delete</a>
-        </Space>
-      ),
+      render: (i, user) => {
+        return (
+          <Space>
+            <a
+              href="#st"
+              onClick={() => {
+                setModalContant("edit");
+                setVisible(true);
+                setName(user.name);
+                setEmail(user.email);
+                setDepartment(user.department);
+                setJob(user.job_title);
+                setRole(user.role);
+                setPassword(user.password);
+                setID(user.id);
+              }}
+            >
+              Edit
+            </a>
+            <span style={{ margin: "1vw" }}>|</span>
+            <a href="#st" onClick={() => {
+              showDeleteConfirm(user.id)
+              }}>
+              Delete
+            </a>
+          </Space>
+        );
+      },
     },
   ];
 
-  const data = [];
+  const data = auth.user;
 
-  for (let i = 0; i < 100; i++) {
-    data.push({
-      key: i,
-      name: `John Brown ${i}`,
-      email: "Aa@aa",
-      department: "IT",
-      job: "IT",
-    });
-  }
+  // const data = [];
+
+  // for (let i = 0; i < 100; i++) {
+  //   data.push({
+  //     key: i,
+  //     name: `John Brown ${i}`,
+  //     email: "Aa@aa",
+  //     department: "IT",
+  //     job: "IT",
+  //   });
+  // }
 
   const rowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
@@ -96,25 +143,84 @@ function UserManage() {
     }),
   };
 
+  function showDeleteConfirm(del) {
+    confirm({
+      title: "Confirmation",
+      icon: <ExclamationCircleOutlined />,
+      content: "Are you sure you want to delete ?",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        props.delete(del)
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  }
+
+  function error(msg) {
+    Modal.error({
+      title: 'Error',
+      content: msg,
+    });
+  }
+
   useEffect(() => {
-  }, [])
+    props.getAllUser.getAllUserAction();
+  }, [props.getAllUser]);
+
+  useEffect(() => {
+    if (auth.checkAddUser || auth.checkEdit || auth.checkDelete) {
+      if (
+        auth.checkAddUser.status === "success" ||
+        auth.checkEdit.status === "success" ||
+        auth.checkDelete.status === "success"
+      ) {
+        setVisible(false);
+        props.clearCheck.clearCheckAction();
+        window.location.reload();
+      } else if (auth.checkAddUser.status === "error") {
+        setErrRole("This email is already used.");
+      } else if (auth.checkEdit.status === "error") {
+        setErrRole(auth.checkEdit.message);
+      } else if (auth.checkDelete.status === "error") {
+        error(auth.checkDelete.message)
+      }
+    }
+  }, [auth.checkAddUser, auth.checkEdit, props.clearCheck, auth.checkDelete]);
+
+  if (auth.info === "") {
+    return <Redirect to="/" />;
+  }
 
   return (
     <div className="container">
       <div className="header-content">
         <span>User manage</span>
         <span className="text-right">
-          <a href="/">John Doe (Admin)</a>
+          <a href="#name">
+            {auth.info.name} ({auth.info.role})
+          </a>
           <span style={{ margin: "1vw" }}>|</span>
-          <a href="/">Logout</a>
+          <a href="#logout" onClick={() => props.logout()}>
+            Logout
+          </a>
         </span>
       </div>
 
       <div className="second-row">
-        <button className="submit-button" onClick={() => {
-            setModalContant("add")
-            setVisible(true)
-        }}>Add New</button>
+        <button
+          className="submit-button"
+          onClick={() => {
+            setModalContant("add");
+            setVisible(true);
+            setErrRole("");
+          }}
+        >
+          Add New
+        </button>
         <span className="text-right">
           <Input
             className="search-input"
@@ -137,71 +243,215 @@ function UserManage() {
         title={modalContant === "edit" ? "Edit" : "Add New"}
         visible={visible}
         okText="Save"
-        onOk={(e) => {
-          console.log(e);
-          setVisible(false);
+        onOk={() => {
+          if (modalContant === "edit") {
+            if (
+              ErrName === "success" ||
+              ErrEmail === "success" ||
+              ErrDepartment === "success" ||
+              ErrJob === "success" ||
+              ErrPassword === "success" ||
+              ErrRole === "success"
+            ) {
+              const data = {
+                id: ID,
+                name: name,
+                email: email,
+                department: department,
+                job_title: job,
+                role: role,
+                password: password,
+              };
+              props.editUser(data);
+            } else {
+              setErrRole("No information has been change");
+            }
+          } else {
+            if (name === "") {
+              setErrName("Please fill in your name");
+            }
+            if (email === "") {
+              setErrEmail("Please fill in your email");
+            }
+            if (department === "") {
+              setErrDepartment("Please select department");
+            }
+            if (job === "") {
+              setErrJob("Please fill in jop title");
+            }
+            if (password === "") {
+              setErrPassword("Please fill your password");
+            }
+            if (
+              ErrName === "success" &&
+              ErrEmail === "success" &&
+              ErrDepartment === "success" &&
+              ErrJob === "success" &&
+              ErrPassword === "success"
+            ) {
+              const data = {
+                name: name,
+                email: email,
+                department: department,
+                job_title: job,
+                role: role,
+                password: password,
+              };
+              props.addUser(data);
+            }
+          }
         }}
-        onCancel={(e) => {
-          console.log(e);
+        onCancel={() => {
           setVisible(false);
+          props.clearCheck.clearCheckAction();
+        }}
+        closable={() => {
+          setVisible(false);
+          props.clearCheck.clearCheckAction();
         }}
       >
         <p>
           Name <span className="imp">*</span>
-          <input />
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (e.target.value.match(/^[a-zA-Z\s]+$/)) {
+                setErrName("success");
+              } else {
+                setErrName("Please fill in only characters a-z, A-Z");
+              }
+            }}
+          />
+          <span className="text-err">
+            {ErrName === "success" ? null : ErrName}
+          </span>
         </p>
         <p>
           Email <span className="imp">*</span>
-          <input />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (
+                e.target.value.match(
+                  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+                )
+              ) {
+                setErrEmail("success");
+              } else {
+                setErrEmail("Email incorrect");
+              }
+            }}
+          />
+          <span className="text-err">
+            {ErrEmail === "success" ? null : ErrEmail}
+          </span>
         </p>
         <p>
           Department <span className="imp">*</span>
-          <Select style={{ width: "100%" }} placeholder="Please select">
+          <Select
+            style={{ width: "100%" }}
+            value={
+              department === "" ? (
+                <span style={{ color: "#aaaaaa" }}>Please select</span>
+              ) : (
+                department
+              )
+            }
+            onChange={(e) => {
+              setDepartment(e);
+              setErrDepartment("success");
+            }}
+          >
             <Option value="IT">IT</Option>
             <Option value="BOMO">BOMO</Option>
             <Option value="HR">HR</Option>
           </Select>
+          <span className="text-err">
+            {ErrDepartment === "success" ? null : ErrDepartment}
+          </span>
         </p>
         <p>
           Job Title <span className="imp">*</span>
-          <input />
+          <input
+            type="text"
+            value={job}
+            onChange={(e) => {
+              setJob(e.target.value);
+              if (e.target.value.match(/^[a-zA-Z]+$/)) {
+                setErrJob("success");
+              } else {
+                setErrJob("Please fill in only characters a-z, A-Z");
+              }
+            }}
+          />
+          <span className="text-err">
+            {ErrJob === "success" ? null : ErrJob}
+          </span>
         </p>
         <p>
-          New Password
+          {modalContant === "edit" ? (
+            "New Password"
+          ) : (
+            <span>
+              Password<span className="imp">*</span>
+            </span>
+          )}
           <br />
-          <input style={{ width: "80%" }} />
+          <input
+            type="password"
+            style={{ width: "80%" }}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setErrPassword("success");
+            }}
+          />
           <a href="#s" style={{ marginLeft: "2vw" }}>
             Generate
           </a>
+          <br />
+          <span className="text-err">
+            {ErrPassword === "success" ? null : ErrPassword}
+          </span>
         </p>
         <p>
           Role
-          <Radio.Group style={{ marginLeft: "2vw" }} value={role} onChange={(e) => setRole(e.target.value)}>
+          <Radio.Group
+            style={{ marginLeft: "2vw" }}
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value);
+              setErrRole("success");
+            }}
+          >
             <Radio value="Admin">Admin</Radio>
             <Radio value="Manager">Manager</Radio>
           </Radio.Group>
         </p>
+        <p className="text-err">{ErrRole === "success" ? null : ErrRole}</p>
       </Modal>
-
     </div>
   );
 }
 
-export default UserManage;
+const mapStateToProps = (state) => {
+  return {
+    auth: state.auth,
+  };
+};
 
-function showDeleteConfirm() {
-    confirm({
-      title: 'Confirmation',
-      icon: <ExclamationCircleOutlined />,
-      content: 'Are you sure you want to delete ?',
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk() {
-        console.log('OK');
-      },
-      onCancel() {
-        console.log('Cancel');
-      },
-    });
-  }
+const mapDispatchToProps = (dispatch) => {
+  return {
+    logout: (logout) => dispatch(logoutAction(logout)),
+    getAllUser: { getAllUserAction: () => dispatch(getAllUserAction()) },
+    addUser: (add) => dispatch(AddUserAction(add)),
+    clearCheck: { clearCheckAction: () => dispatch(clearCheckAction()) },
+    editUser: (edit) => dispatch(EditUserAction(edit)),
+    delete: (del) => dispatch(DeleteUserAction(del)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserManage);

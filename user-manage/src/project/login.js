@@ -1,12 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { loginAction } from "./../store/action/authAction";
+import { Redirect } from "react-router-dom";
+import { loginAction, logoutAction } from "./../store/action/authAction";
 
 function Login(props) {
+  const { auth } = props;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [ErrEmail, setErrEmail] = useState("");
   const [ErrPassword, setErrPassword] = useState("");
+
+  useEffect(() => {
+    if (auth.info.status === "error") {
+      setErrPassword(auth.info.message);
+    } else {
+      if (auth.info.role === "Admin" || auth.info.role === "Manager") {
+        setErrEmail("");
+        setErrPassword("");
+      } else if (auth.info === "") {
+        setEmail("");
+        setPassword("");
+        setErrEmail("");
+        setErrPassword("");
+      } else {
+        setErrPassword(
+          "You don’t have permission, please contact Administrator"
+        );
+      }
+    }
+  }, [auth.info]);
+
+  useEffect(() => {
+    props.logout.logout()
+  },[props.logout])
+
+  if(auth.info !== ''){
+    if (auth.info.role === "Admin" || auth.info.role === "Manager") {
+      return <Redirect to="/user" />
+    }
+  }
 
   return (
     <div className="App">
@@ -38,7 +70,9 @@ function Login(props) {
               }
             }}
           />
-          <span className="text-err">{ErrEmail === "success" ? null : ErrEmail}</span>
+          <span className="text-err">
+            {ErrEmail === "success" ? null : ErrEmail}
+          </span>
         </div>
         <div className="login-input">
           <label htmlFor="Password">Password</label>
@@ -48,17 +82,19 @@ function Login(props) {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              setErrPassword("success")
+              setErrPassword("success");
             }}
           />
-          <span className="text-err">{ErrPassword === "success" ? null : ErrPassword}</span>
+          <span className="text-err">
+            {ErrPassword === "success" ? null : ErrPassword}
+          </span>
         </div>
         <div className="div-button">
           <button
             className="submit-button"
             onClick={() => {
               console.log(ErrEmail, ErrPassword);
-              
+
               if (email === "") {
                 setErrEmail("Please fill in your email");
               } else if (
@@ -91,10 +127,17 @@ function Login(props) {
   );
 }
 
-const mapDispatchToProps = (dispatch) => {
+const mapStateToProps = (state) => {
   return {
-    login: (login) => dispatch(loginAction(login)),
+    auth: state.auth
   };
 };
 
-export default connect(null, mapDispatchToProps)(Login);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    login: (login) => dispatch(loginAction(login)),
+    logout: {logout: (logout) => dispatch(logoutAction(logout))}
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
